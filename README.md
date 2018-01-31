@@ -6,7 +6,12 @@ Computes the correlation of two signals (autocorrelation if the signals are the 
 $ cat two_column_file  | correlation -N [N]  > corr.dat  
 ```   
 
-The output will have only one column containing the correlation from lag 0 to maxLag  
+The output will have three columns:
+```
+	lag corr(lag) std(lag)
+```
+std = sqrt(<corr^2> - <corr>^2)  
+
 If you have several files with realizations of the same signal, say signal1, signal2,...signalN  you can interleave them to use with correlation as:  
 ```bash
 $ paste -d'\n' signal* | correlation ... > corr.dat  
