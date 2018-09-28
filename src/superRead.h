@@ -8,6 +8,7 @@
 #include<string>
 #include<cstdlib>
 #include<stdio.h>
+#include<iostream>
 
 #ifdef USE_BOOST
 #include <boost/spirit/include/qi_real.hpp>
@@ -33,7 +34,7 @@ inline void readNextLineBoost(FILE *in, int ncols, floatType *readedValues){
     readedValues[i] = value;
     
     currentCharacter++;
-    firstCharacter = 0;
+    firstCharacter = currentCharacter;
     
   }
 #else

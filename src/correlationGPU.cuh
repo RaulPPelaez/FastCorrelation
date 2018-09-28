@@ -23,8 +23,8 @@ namespace FastCorrelation{
 
     const auto a = A[i];
     const auto b = B[i];
-    output[i].x =(a.x*b.x+a.y*b.y)*prefactor;
-    output[i].y = real(0.0);
+    output[i].x =(a.x*b.x+a.y*b.y);
+    output[i].y = (a.y*b.x - a.x*b.y);
   }
 
   template<class real>
@@ -60,11 +60,9 @@ namespace FastCorrelation{
       cufftReal_t* h_signalA_ptr = (cufftReal_t*)thrust::raw_pointer_cast(h_signalA.data());
       cufftReal_t* h_signalB_ptr = (cufftReal_t*)thrust::raw_pointer_cast(h_signalB.data());
 
-
+      std::vector<double> means(nsignalsReal*2, 0);
       //Read input
-      int index = -1;
       for(int i = 0; i<numberElementsReal*nsignalsReal; i++){
-	index++;
 	double tmp[2];
 	readNextLine(in, 2, tmp);
 	//This is a little obtuse but this codes the input format into the windows=signals convention. Each window
@@ -75,11 +73,23 @@ namespace FastCorrelation{
 	const int signalStride = i%nsignalsReal;
 	//The index of the first signal at the current time
 	const int timeStride = ((i%(nsignalsReal*numberElements))/nsignalsReal)*nWindows*nsignalsReal;
-	index = timeStride + signalStride + windowOffset;
+	const int index = timeStride + signalStride + windowOffset;
 	h_signalA_ptr[index] = tmp[0];
 	h_signalB_ptr[index] = tmp[1];
-      
-
+	means[2*signalStride] += tmp[0];
+	means[2*signalStride+1] += tmp[1];     
+      }
+      for(int signalStride = 0; signalStride<nsignalsReal; signalStride++){
+	means[2*signalStride]   /= numberElementsReal;
+	means[2*signalStride+1] /= numberElementsReal;
+      }
+      for(int i = 0; i<numberElementsReal*nsignalsReal; i++){
+	const int windowOffset = (i/(nsignalsReal*numberElements))*nsignalsReal;
+	const int signalStride = i%nsignalsReal;
+	const int timeStride = ((i%(nsignalsReal*numberElements))/nsignalsReal)*nWindows*nsignalsReal;
+	const int index = timeStride + signalStride + windowOffset;
+	h_signalA_ptr[index] -= means[2*signalStride];
+	h_signalB_ptr[index] -= means[2*signalStride+1];
       }
     }
     //From this point the data can be used as nsignals of size numberElementsPadded
@@ -160,14 +170,15 @@ namespace FastCorrelation{
       //I really do not know where this comes from, but it works... I think I messed some normalization in the FFT
       double misteriousScale =0.5*(2-double(maxLag)/numberElements);
       
-      
+
+      double normFFT = double(numberElements)*numberElements;
       for(int s=0; s<nsignals;s++){ //Average all correlations
 	double tmp = h_signalA_ptr[nsignals*i+s];
 	mean += tmp;
 	mean2 += tmp*tmp;
       }
-      mean  /= double(nsignals)*numberElements;
-      mean2 /= double(nsignals)*numberElements*numberElements;
+      mean  /= double(nsignals)*normFFT;
+      mean2 /= double(nsignals)*normFFT*normFFT;
       
       double corr = mean*misteriousScale*scale;
       double error = sqrt(mean2 - mean*mean)*misteriousScale*scale;
