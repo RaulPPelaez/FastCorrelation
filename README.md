@@ -28,7 +28,6 @@ The input must have two columns with the following order:
        ...  
        A_t_N_signal_nsignals  B_t_N_signal_nsignals  
 ```         
-If more than one signal is present, all signals must have zero mean on input.  
 
 ##  OPTIONS:  
     -N: signal length  
