@@ -1,3 +1,4 @@
+
 /*Raul P. Pelaez 2018
   Some utilities to process argv and argc
  */
@@ -5,6 +6,7 @@
 #define PARSEARGUMENTS_H
 
 #include<sstream>
+#include<cstring>
 //Ask for one or many arguments of any type after a flag from argv. returns true if numberArguments where found after flag
 template<class T>
 bool parseArgument(int argc, char *argv[],
