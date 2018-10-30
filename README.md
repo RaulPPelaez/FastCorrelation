@@ -1,5 +1,6 @@
 Raul P. Pelaez 2018. FastCorrelation  
 Computes the correlation of two signals (autocorrelation if the signals are the same).  
+You can compute using a GPU with cuFFT or using a CPU with FFTW  
     
 ##  USAGE:  
 ```bash
@@ -40,5 +41,5 @@ The input must have two columns with the following order:
           biased: Return the biased average, R/N  
 	  unbiased: Return the unbiased average, R(t)/(N-t)  
     -prec: float or double, specify the precision mode (default is float).  
-  
+	-device: GPU or CPU, specify the device (default is CPU) to run FFT.  
     -h or -help: Print this info.  
