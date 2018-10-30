@@ -16,6 +16,10 @@ CXX=g++
 #You can include here the fftw3 location if it is not already included in the LD_LIBRARY_PATH and standard include paths
 FFTW_FLAGS= -lfftw3 -lfftw3f
 
+#Uncomment if you want to use the MKL wrapper interface to FFTW instead of FFTW itself
+#FFTW_FLAGS=-DMKL_ILP64 -m64 -I${MKLROOT}/include -L${MKLROOT}/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
+#USE_MKL=-DUSE_MKL
+
 ifdef USE_GPU
 GPUFLAGS= $(USE_GPU) -L$(CUDA_ROOT)/lib64 GPU.o  -lcufft -lcudart
 ifeq ($(ARCH),)
@@ -28,11 +32,11 @@ endif
 
 all: GPU.o
 #-DMKL_ILP64 -m64 -I${MKLROOT}/include  -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
-	$(CXX) -std=c++11 -O3 FastCorrelation.cpp  $(FFTW_FLAGS) $(GPUFLAGS) $(USE_BOOST) $(USE_GPU) -o correlation
+	$(CXX) -std=c++11 -O3 FastCorrelation.cpp  $(FFTW_FLAGS) $(GPUFLAGS) $(USE_BOOST) $(USE_MKL) $(USE_GPU) -o correlation
 
 GPU.o:
 ifdef USE_GPU
-	$(CUDA_ROOT)/bin/nvcc -std=c++11 -O3 $(GENCODE_FLAGS) $(USE_BOOST) $(USE_GPU)  -c correlationGPU.cu -o GPU.o
+	$(CUDA_ROOT)/bin/nvcc -std=c++11 -O3 $(GENCODE_FLAGS) $(USE_BOOST) $(USE_GPU) $(USE_MKL) -c correlationGPU.cu -o GPU.o
 endif	
 clean:
 	rm -f correlation GPU.o
