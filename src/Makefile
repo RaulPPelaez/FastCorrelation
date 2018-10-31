@@ -36,7 +36,7 @@ all: GPU.o
 
 GPU.o:
 ifdef USE_GPU
-	$(CUDA_ROOT)/bin/nvcc -std=c++11 -O3 $(GENCODE_FLAGS) $(USE_BOOST) $(USE_GPU) $(USE_MKL) -c correlationGPU.cu -o GPU.o -Wall -Wextra
+	$(CUDA_ROOT)/bin/nvcc -std=c++11 -O3 $(GENCODE_FLAGS) $(USE_BOOST) $(USE_GPU) $(USE_MKL) -c correlationGPU.cu -o GPU.o
 endif	
 clean:
 	rm -f correlation GPU.o
