@@ -52,7 +52,10 @@ inline void readNextLineSTD(FILE *in, int ncols, floatType *readedValues){
   static char *line = nullptr;
   static size_t linesize;
   
-  int nr = getline(&line, &linesize, in);
+  if(getline(&line, &linesize, in)<0){
+    std::cerr<<"getline returned an error"<<std::endl;
+    exit(1);
+  }
   
   char *l2;
   char *l1 = line;

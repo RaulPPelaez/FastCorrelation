@@ -32,11 +32,11 @@ endif
 
 all: GPU.o
 #-DMKL_ILP64 -m64 -I${MKLROOT}/include  -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
-	$(CXX) -std=c++11 -O3 FastCorrelation.cpp  $(FFTW_FLAGS) $(GPUFLAGS) $(USE_BOOST) $(USE_MKL) $(USE_GPU) -o correlation
+	$(CXX) -std=c++11 -O3 FastCorrelation.cpp  $(FFTW_FLAGS) $(GPUFLAGS) $(USE_BOOST) $(USE_MKL) $(USE_GPU) -o correlation -Wall -Wextra
 
 GPU.o:
 ifdef USE_GPU
-	$(CUDA_ROOT)/bin/nvcc -std=c++11 -O3 $(GENCODE_FLAGS) $(USE_BOOST) $(USE_GPU) $(USE_MKL) -c correlationGPU.cu -o GPU.o
+	$(CUDA_ROOT)/bin/nvcc -std=c++11 -O3 $(GENCODE_FLAGS) $(USE_BOOST) $(USE_GPU) $(USE_MKL) -c correlationGPU.cu -o GPU.o -Wall -Wextra
 endif	
 clean:
 	rm -f correlation GPU.o
