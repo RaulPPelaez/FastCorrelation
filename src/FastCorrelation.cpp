@@ -17,8 +17,9 @@ Compile with make
 
 #include"parseArguments.h"
 #include"common.h"
+#include"config.h"
 #include<iostream>
-#include"correlationGPU.cuh"
+#include"correlationGPU.h"
 #include"correlationCPU.h"
 
 using namespace FastCorrelation;

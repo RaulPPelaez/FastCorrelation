@@ -2,7 +2,7 @@
   This file should be compiled separately from the rest and then linked if GPU mode is desired.
  */
 
-#include"correlationGPU.cuh"
+#include"correlationGPU.h"
 #include"common.h"
 #include<cufft.h>
 #include<thrust/device_vector.h>

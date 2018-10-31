@@ -1,0 +1,8 @@
+#ifndef FASTCORRCONFIG_H
+#define FASTCORRCONFIG_H
+#define FastCorrelation_VERSION_MAJOR @FastCorrelation_VERSION_MAJOR@
+#define FastCorrelation_VERSION_MINOR @FastCorrelation_VERSION_MINOR@
+#cmakedefine USE_BOOST
+#cmakedefine USE_CUDA
+#cmakedefine USE_MKL
+#endif

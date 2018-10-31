@@ -2,13 +2,15 @@
   See FastCorrelation.cu.
 
  */
-#ifndef CORRELATIONGPU_CUH
-#define CORRELATIONGPU_CUH
+#ifndef CORRELATIONGPU_H
+#define CORRELATIONGPU_H
 
 
 #include"common.h"
+#include"config.h"
 #include<stdio.h>
-#ifdef GPUMODE
+#include<iostream>
+#ifdef USE_CUDA
 namespace FastCorrelation{
   namespace GPU{
 
