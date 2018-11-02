@@ -1,13 +1,20 @@
 cmake_minimum_required (VERSION 3.8)
 include(CheckLanguage)
-#set( CMAKE_VERBOSE_MAKEFILE on )
+include(CheckCXXCompilerFlag)
 project (FastCorrelation CXX)
+#set( CMAKE_VERBOSE_MAKEFILE on )
 set (FastCorrelation_VERSION_MAJOR 1)
 set (FastCorrelation_VERSION_MINOR 0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+#I want only std=c++11, not c++0x
+check_cxx_compiler_flag("-std=c++11" HAS_CXX11)
+if(NOT HAS_CXX11)
+  message(FATAL_ERROR "C++ compiler needs to allow c++11 standard")
+endif()
 
 option(USE_BOOST "Use Boost-qi for reading, highly improves reading performance" OFF)
 option(USE_MKL "Uses MKL FFTW interface instead of FFTW3" OFF)
@@ -28,7 +35,7 @@ if(NOT DONT_USE_CUDA)
   endif()
 endif()
 
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC" ${CMAKE_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC" ${CMAKE_CXX_FLAGS})
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)

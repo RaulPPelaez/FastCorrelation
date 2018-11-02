@@ -8,6 +8,11 @@
 #include"common.h"
 #include"superRead.h"
 #include<fftw3.h>
+//MKL wrappers do not have alloc functions...
+#ifndef fftw_alloc_complex
+#define NO_FFTW_ALLOC
+#endif
+
 #include<vector>
 #include<cmath>
 namespace FastCorrelation{
@@ -29,14 +34,14 @@ namespace FastCorrelation{
       
       template<class real> typename fftw_prec_types<real>::type* fftw_alloc_complex_prec(int N);
       template<> typename fftw_prec_types<double>::type* fftw_alloc_complex_prec<double>(int N){
-#ifdef USE_MKL
+#ifdef NO_FFTW_ALLOC
 	return (fftw_prec_types<double>::type*) malloc(N*sizeof(fftw_prec_types<double>::type));
 #else	
 	return fftw_alloc_complex(N);
 #endif
       }
       template<> typename fftw_prec_types<float>::type* fftw_alloc_complex_prec<float>(int N){
-#ifdef USE_MKL
+#ifdef NO_FFTW_ALLOC
 	return (fftw_prec_types<float>::type*) malloc(N*sizeof(fftw_prec_types<double>::type));
 #else	
 	return fftwf_alloc_complex(N);
