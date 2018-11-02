@@ -1,7 +1,16 @@
 Raul P. Pelaez 2018. FastCorrelation  
 Computes the correlation of two signals (autocorrelation if the signals are the same).  
 You can compute using a GPU with cuFFT or using a CPU with FFTW  
-    
+
+## BUILD:  
+Run:  
+```bash
+mkdir build; cd build; cmake ..; make;
+```
+CMake will autodetect CUDA and FFTW3 and generate a valid Makefile for the current system.  
+You can also change the DONT_USE_CUDA option in cmake to force CPU only mode.  
+The option USE_MKL will force the usage of the MKL FFTW implementation (CMake will automatically try to find it if fftw3 is not present).  
+
 ##  USAGE:  
 ```bash
 $ cat two_column_file  | correlation -N [N]  > corr.dat  
