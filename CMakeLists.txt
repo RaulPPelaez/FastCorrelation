@@ -6,7 +6,7 @@ set (FastCorrelation_VERSION_MAJOR 1)
 set (FastCorrelation_VERSION_MINOR 0)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(USE_BOOST "Use Boost-qi for reading, highly improves reading performance" OFF)
