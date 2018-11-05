@@ -9,6 +9,8 @@
 #include<thrust/host_vector.h>
 #include"superRead.h"
 #include"cufftPrecisionAgnostic.h"
+#include"debugTools.cuh"
+#include"cufftDebug.h"
 
 namespace FastCorrelation{
   namespace GPU{
@@ -46,12 +48,13 @@ namespace FastCorrelation{
       //Each signal is duplicated and the second part filled with zeros, this way the results are equivalent to the usual O(N^2) correlation algorithm.
       int numberElementsPadded = numberElements;
       if(padSignal)
-	numberElementsPadded = numberElements + maxLag;
+	numberElementsPadded = numberElements + maxLag;      
       thrust::device_vector<cufftComplex_t> d_signalA;//(numberElementsPadded*nsignals);
       thrust::device_vector<cufftComplex_t> d_signalB;//(numberElementsPadded*nsignals);
-
+      
       thrust::host_vector<cufftComplex_t> h_signalA(numberElementsPadded*nsignals, cufftComplex_t());
       thrust::host_vector<cufftComplex_t> h_signalB(numberElementsPadded*nsignals, cufftComplex_t());
+      
 
       {
 	cufftReal_t* h_signalA_ptr = (cufftReal_t*)thrust::raw_pointer_cast(h_signalA.data());
@@ -92,9 +95,17 @@ namespace FastCorrelation{
       //From this point the data can be used as nsignals of size numberElementsPadded
     
       //Upload
-      d_signalA = h_signalA; cufftComplex_t *d_signalA_ptr = thrust::raw_pointer_cast(d_signalA.data());
-      d_signalB = h_signalB; cufftComplex_t *d_signalB_ptr = thrust::raw_pointer_cast(d_signalB.data());
-    
+      cufftComplex_t *d_signalA_ptr;
+      cufftComplex_t *d_signalB_ptr;
+      try{
+	d_signalA = h_signalA; d_signalA_ptr = thrust::raw_pointer_cast(d_signalA.data());
+	d_signalB = h_signalB; d_signalB_ptr = thrust::raw_pointer_cast(d_signalB.data());
+      }
+      catch(thrust::system_error &e){
+	std::cerr<<"ERROR! Could not resize device arrays with error: "<<e.what()<<std::endl;
+	exit(1);
+      }
+	
       cudaStream_t stream;
       cudaStreamCreate(&stream);
 
@@ -110,13 +121,13 @@ namespace FastCorrelation{
 	int inembed[] = { 0 };    // --- Input size with pitch (ignored for 1D transforms)
 	int onembed[] = { 0 };    // --- Output size with pitch (ignored for 1D transforms)
 	int batch = nsignals;     // --- Number of batched executions
-	cufftPlanMany(&plan, rank, n, 
+	CufftSafeCall(cufftPlanMany(&plan, rank, n, 
 		      inembed, istride, idist,
-		      onembed, ostride, odist, CUFFT_Real2Complex<real>::value, batch);
+				    onembed, ostride, odist, CUFFT_Real2Complex<real>::value, batch));
       }
-      cufftSetStream(plan, stream);
-      cufftExecReal2Complex<real>(plan, (cufftReal_t*) d_signalA_ptr, d_signalA_ptr);
-      cufftExecReal2Complex<real>(plan, (cufftReal_t*) d_signalB_ptr, d_signalB_ptr);
+      CufftSafeCall(cufftSetStream(plan, stream));
+      CufftSafeCall(cufftExecReal2Complex<real>(plan, (cufftReal_t*) d_signalA_ptr, d_signalA_ptr));
+      CufftSafeCall(cufftExecReal2Complex<real>(plan, (cufftReal_t*) d_signalB_ptr, d_signalB_ptr));
 
       //Convolve TODO: there are more blocks than necessary
       int Nthreads=512;
@@ -126,6 +137,7 @@ namespace FastCorrelation{
 							  d_signalB_ptr, //Overwrite this array
 							  nsignals*(numberElementsPadded+1),
 							  1/(double(numberElements)));
+      CudaCheckError();
       //Inverse FFT the convolution to obtain correlation
       cufftHandle plan2;
       {
@@ -137,15 +149,21 @@ namespace FastCorrelation{
 	int inembed[] = { 0 };          // --- Input size with pitch (ignored for 1D transforms)
 	int onembed[] = { 0 };         // --- Output size with pitch (ignored for 1D transforms)
 	int batch = nsignals;                      // --- Number of batched executions
-	cufftPlanMany(&plan2, rank, n, 
-		      inembed, istride, idist,
-		      onembed, ostride, odist, CUFFT_Complex2Real<real>::value, batch);
+	CufftSafeCall(cufftPlanMany(&plan2, rank, n, 
+				    inembed, istride, idist,
+				    onembed, ostride, odist, CUFFT_Complex2Real<real>::value, batch));
       }
 
-      cufftSetStream(plan2, stream);
-      cufftExecComplex2Real<real>(plan2, d_signalB_ptr, (cufftReal_t*)d_signalB_ptr);
+      CufftSafeCall(cufftSetStream(plan2, stream));
+      CufftSafeCall(cufftExecComplex2Real<real>(plan2, d_signalB_ptr, (cufftReal_t*)d_signalB_ptr));
       //Download
-      h_signalA = d_signalB; //signalB now holds correlation
+      try{
+	h_signalA = d_signalB; //signalB now holds correlation
+      }
+      catch(thrust::system_error &e){
+	std::cerr<<"ERROR! Could not download results from GPU with error: "<<e.what()<<std::endl;
+	exit(1);
+      }
 
     
       cufftReal_t* h_signalA_ptr = (cufftReal_t*)thrust::raw_pointer_cast(h_signalA.data());
